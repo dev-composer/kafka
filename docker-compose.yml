@@ -21,7 +21,7 @@ services:
       - kafka-data:/var/lib/kafka/data  # 数据持久化[3](@ref)
 
   redpanda-console:
-    image: redpandadata/console:2.8.2
+    image: redpandadata/console:v2.8.2
     container_name: redpanda-console
     ports:
       - "8080:8080"  # 控制台 Web 访问端口
