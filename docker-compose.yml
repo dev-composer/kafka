@@ -1,3 +1,36 @@
 services:
-  hello:
-    image: "${HELLO_IMAGE}"
+  kafka:
+    image: apache/kafka:3.9.0  # 最新稳定版[3](@ref)
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"  # 客户端访问端口
+      - "9093:9093"  # 控制器内部通信端口
+    environment:
+      KAFKA_PROCESS_ROLES: "broker,controller"  # 启用 KRaft 模式
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # 客户端连接地址
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # 单节点投票配置
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 3  # 默认分区数
+    volumes:
+      - kafka-data:/var/lib/kafka/data  # 数据持久化[3](@ref)
+
+  redpanda-console:
+    image: redpandadata/console:2.8.2
+    container_name: redpanda-console
+    ports:
+      - "8080:8080"  # 控制台 Web 访问端口
+    environment:
+      KAFKA_BROKERS: "kafka:9092"  # 指向 Kafka 容器地址
+    depends_on:
+      - kafka
+    networks:
+      - default
+
+volumes:
+  kafka-data:  # 持久化存储声明
