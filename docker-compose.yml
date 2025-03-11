@@ -7,22 +7,24 @@ services:
       - "9092:9092"  # 客户端访问端口
       - "9093:9093"  # 控制器内部通信端口
     environment:
-      KAFKA_PROCESS_ROLES: "broker,controller"  # 启用 KRaft 模式
       KAFKA_NODE_ID: 1
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # 客户端连接地址
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # 单节点投票配置
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_NUM_PARTITIONS: 3  # 默认分区数
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
     volumes:
       - kafka-data:/var/lib/kafka/data  # 数据持久化[3](@ref)
 
-  redpanda-console:
+  console:
     image: redpandadata/console:v2.8.2
-    container_name: redpanda-console
+    container_name: console
     ports:
       - "8080:8080"  # 控制台 Web 访问端口
     environment:
